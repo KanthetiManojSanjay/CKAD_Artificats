@@ -1,0 +1,264 @@
+kubectl create ns mynamespace
+kubectl -n mynamespacerun run nginx --image=nginx --restart=Never --dry-run=client -o yaml > pod.yaml
+
+kubectl create -f pod.yaml
+
+kubectl run busybox --image=busybox --restart=Never --command -- env --dry-run=client -o yaml > pod2.yaml
+kubectl logs busybox
+
+kubectl create ns myns --dry-run=client -o yaml > ns.yaml
+
+kubectl create quota myrq --hard=cpu=1,memory=1G, pods=2 --dry-run=client -o yaml 
+
+kubectl get pods -A 
+
+kubectl run nginx --image=nginx --port=80 --restart=Never
+
+kubectl set image pod/nginx nginx=nginx:1.7.1
+
+kubectl get pods -o wide 
+kubectl run busybox --image=busybox --rm --restart=Never --it -- wget -O- IP:80
+kubectl get pod nginx -o yaml 
+
+kubectl describe pod nginx 
+kubectl logs nginx
+kubectl logs nginx --previous
+kubectl exec nginx -it -- /bin/sh
+
+kubectl run busybox --image=busybox --restart=Never -it -- bin/sh -c 'echo hello world'
+kubectl run busybox --image=busybox --restart=Never -it -- echo 'hello world'
+
+kubectl run busybox --image=busybox --rm --restart=Never -- echo 'hello world'
+
+kubectl run nginx --image=nginx --env=var1=val1 --restart=Never
+kubectl exec -it nginx -- env
+
+
+kubectl run busybox --image=busybox --restart=Never --echo 'hello;sleep 3600 --dry-run=client -o yaml > pod3.yaml
+
+kubectl exec -it busybox -c busybox2 -- bin/sh
+ls 
+exit
+
+kubectl run nginx --image=nginx --restart=Never --port=80 --dry-run=client -o yaml > pod-init.yaml
+
+kubectl run busybox --image=busybox --restart=Never  -it -- /bin/sh -c 'wget -O- IP'
+
+kubectl run nginx1 --image=nginx -l app=v1
+kubectl get pods --show-labels
+kubectl get pod nginx2 app=v2 --overwrite
+kubectl get pods -L app
+kubectl get pods --l app=v2
+kubectl get pods nginx1 app-
+
+kubectl annotate pod nginx1 <key>=<value>
+kubectl get pod nginx | grep -i 'annotations'
+kubectl annotatepod nginx1 key-
+
+kubectl create deploy nginx --image=nginx:1.18.0 --replicas=2 --dry-run=client -o yaml > deploy.yaml
+add ports:
+     - containerPort: 80
+
+kubectl get deploy <deployName> -o yaml
+kubectl get rs -l key=value -o yaml
+kubectl get pods -l key=value -o yaml
+
+kubectl rollout status deploy <deployName>
+kubectl set image deploy deployName nginx=nginx:1.19.8
+
+kubectl rollout history deploy deployName
+kubectl rollout undo deploy deployName
+kubectl describe pod podName | grep -i image
+kubectl rollout undo deploy deployName --to-revision=2 
+kubectl describe deploy deployName | grep -i image
+
+kubecrl rollout history deploy deployName --revision=4
+kubectl scale deploy deployName --replicas=3
+kubectl autoscale deploy deployName --min=5 --max=10 --cpu-percent=80
+kubectl get hpa deployName
+
+kubectl rollout pause deploy deployName
+kubectl set image deploy deployName nginx=nginx:1.19.9
+kubectl rollout history deploy deployName
+kubectl rollout resume deploy deployName
+kubectl delete deploy deployName
+kubectl delete hpa deployName
+
+kubectl create job pi --image=perl -- perl -Mbignum=bpi -wle 'print bpi(2000)'
+kubectl get jobs -wa
+kubectl logs job/jobName
+kubectl delete job jobName
+
+kubectl create job busybox --image=busybox -- /bin/sh -c 'echo hello;sleep 30;echo world'
+kubectl logs podNmae -F
+kubectl describe job jobName 
+kubectl logs job/jobName
+
+kubetl delete job jobName 
+
+completions
+parallelisim
+activeDeadlineSeconds
+
+kubectl create cronjob busybox --image=busybox --schedule="*/1 * * * *"  -- /bin/sh -c 'date; echo Hello from the Kubernetes cluster' -o yaml > cronjob.ysml
+kubectl logs podName
+
+kubectl create cronjob busybox --image=busybox --schedule="*/1 * * * *" --restart=Never -- bin/sh -c 'date; echo Hello from the Kubernetes cluster'
+spec: 
+  spec: 
+    activeDeadlineSeconds:17 to job 
+
+kubectl create cm config --from-literal=<key>=<value>
+kubectl describe cm config 
+echo -e "key=value" > config.txt
+kubectl create cm --from-file= config.txt
+
+kubectl create cm options --from-literal=key=value 
+kubectl run nginx --image=nginx --restart=Never --dry-run=cient -o yaml > pod.yaml
+env:
+  - name: option
+    valueFrom:
+      configMapKeyRef:
+          name: cmName
+          key: keyName
+
+kbectl exec -it nginx -- env | grep option
+
+envFrom:
+  - configMapRef:
+      name: cmName
+
+kubectl create cm cmvolume --from-literal=key=value --from-literal=key=value --dry-run=client -o yaml > cm.yaml
+kubectl run nginx --restart=Never --dry-run=client -o yaml > pod.yaml
+  volueMounts:
+    - name: name
+      mountPath: /etc/lala  
+
+volumes:
+  - name: name
+    configMap
+      name: cmName
+
+kubectl exec -it nginx -- /bin/sh
+cd /etc/lala
+ls
+cat var8
+
+spec:
+  securityContext:
+    runAsUser: 101
+spec: -> of container
+  securityContext:
+    capabilities:
+      add: []
+
+kubectl run nginx --image=nginx --restart=Never  --requests='cpu=100m,memory=256Mi' --limits='cpu=200m,memory=512Mi'  --dry-run=client 
+
+kubectl create secret generic mysecret --from-literal=key=value
+
+echo -n admin > username
+kubectl create secret genrric mysecret2 --from-file=username
+kubectl describe secret secretName - o yaml 
+echo -n x | base64 -d
+
+   volumeMounts:
+    - name:
+      mountPath: 
+
+volumes:
+ - name:
+   secret:
+     secretName:
+
+kubectl exec -it podName -- bin/sh
+ls /etc/foo
+
+env:
+  - name: username
+    valueFrom:
+      secretKeyRef:
+        name: <secretName>
+        key: key
+kubectl exec -it nginx -- env | grep USERNAME | cut -d '=' -f 2 
+
+livenessProbe:
+      exec:
+        command:
+        - ls
+      initialDelaySeconds: 5
+      periodSeconds: 5
+
+kubectl run nginx --image=nginx --restart=Never --port=80 --dry-run=client -o yaml > pod.yaml
+readinessProbe:
+   httpGet:
+     path: /
+     port: 80
+
+kubectl describe pod podName | grep -i readiness
+kubectl describe pod podName | grep -i liveness
+
+kubectl -n namespace get events | grep -i "Liveness probe failed"
+
+kubectl run busybox --image=busybox --dry-run=client --restart=Never -- /bin/sh -c 'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done'
+kubectl logs podName -f
+
+kubectl run busybox --image=busybox  --restar=Never -- /bin/sh -c 'ls /notexist' 
+kubectl run busybox --image=busybox --restart=Neer -- notexist
+kubectl get events | grep -i error
+kubectl delete pod podName --force --grace-period=0
+
+kubectl top nodes
+
+kubectl run nginx --image=nginx --restart=Never --port=80 -- expose
+
+
+kubectl get svc nginx
+kubectl get ep
+
+kubectl run busybox --image=busybox --restart=Never --rm --exec -it -- wget -O- IP:80
+
+kubectl create deploy foo --image=dgkanatsios/simpleapp --replicas=3 --port=8080 --restart=Never
+kubectl label deploy foo app=foo --overwrite
+
+kubectl get pods -o wide
+kubectl run busybox --rm --image=busybox --restart=Never  -it --sh 
+wget -O- IP:8080
+exit
+
+kubectl expose deploy foo --port=6262 --targetPort=88080
+kubectl get svc
+kubectl get ep foo
+
+kubectl run busybox --image=busybox --restart=Never --rm -it --sh
+wget -O- fooIp:6262
+
+kubectl create deploy nginx --image=nginx --replicas=2 --restart=Never 
+kubectl expose deploy nginx --port=80
+ --timeout=2
+
+ kubectl run busybox --image=busybox -- sleep 3600
+ kubectl cp busybox:etc/passwd ./passwd
+ 
+ kubectl run busybox --image=busybox --restart=Never -- /bin/sh -c  sleep 3600 --dry-run=client --dry-run=client -o yaml > pod.yaml
+
+  volueMounts:
+    - name:
+      mountPath: /etc/foo
+ volumes:
+   - name:
+     emptyDir: {}
+
+kubectl exec -it busybox -c cont2 -- bin/sh 
+cat /etc/passwd | cut -f 1 -d ":" > /etc/foo/passwd
+
+kubectl exec -it busybox -c cont1 -- sh
+mount | grep foo
+cat /etc/foo/passwd 
+exit
+
+kubectl exec -it podName -- /bin/sh
+cp /etc/passwd /etc/foo/passwd
+
+
+kubectl config set-context --current --namespace=<nameSpace>
+
